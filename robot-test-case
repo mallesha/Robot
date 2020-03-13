@@ -1,0 +1,36 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           Collections
+Library           JSONLibrary
+Library           OperatingSystem
+
+*** Variables ***
+${base_url_login}    http://192.168.56.50:8080/webui-one/
+${base_url_device_get}    http://192.168.56.50:8080/restconf/data/tailf-ncs:devices
+${base_url_device_post}    http://192.168.56.50:8080/restconf/data/tailf-ncs:devices
+${json_path}      /home/mallesha/robot/config_files/
+
+*** Test Cases ***
+login-nso
+    ${auth}=    create list    admin    admin
+    create session    myssion    ${baseurl_login}    auth=${auth}
+    ${response}=    get request    myssion    /authentication/CheckForAuthentication/
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+device_get
+    ${auth}=    create list    admin    admin
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl_device_get}    headers=${headers}    auth=${auth}
+    ${response}=    get request    myssion    /device=CE00
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+device_create
+    ${auth}=    create list    admin    admin
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl_device_post}    headers=${headers}    auth=${auth}
+    ${json}    Get Binary File    ${json_path}device_create.json
+    ${response}=    post request    myssion    /    data=${json}
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    201
