@@ -1,0 +1,107 @@
+*** Settings ***
+Library           RequestsLibrary
+Library           Collections
+Library           JSONLibrary
+Library           OperatingSystem
+
+*** Variables ***
+${username}       mchari    #scalar variable
+${password}       Team-Devo#1203
+@{login_auth}     ${username}    ${password}    #list variable @{varible_name}    item1    item2 # &{Dictinary_variable} username=admin    password=admin}
+${service_create_path}    /home/mallesha/robot/config_files/
+${ipaddr}         213.160.72.239
+${baseurl_login}    https://${ipaddr}:443/restconf
+${baseurl}        https://${ipaddr}:443/restconf/data/tailf-ncs:devices
+${baseurl_service}    https://${ipaddr}:443/restconf/data/tailf-ncs:services
+#${get_devices_all}    https://${ipaddr}:443/restconf/data/tailf-ncs:devices
+#${baseurl_get_device_group}    https://${ipaddr}:443/restconf/data/tailf-ncs:devices/device-group
+${device}         device=T01-ntsm-ci-ios38
+${ser-device}     T02-ntsm-ci-ios38
+#${baseurl_get_device}    https://${ipaddr}:443/restconf/data/tailf-ncs:devices/${device}
+#${baseurl_get_device_banner}    https://${ipaddr}:443/restconf/data/tailf-ncs:devices/${device}/config/tailf-ned-cisco-ios:banner
+#${baseurl_get_device_hostname}    https://${ipaddr}:443/restconf/data/tailf-ncs:devices/${device}/config/tailf-ned-cisco-ios:hostname
+#${baseurl_get_device_interface}    https://${ipaddr}:443/restconf/data/tailf-ncs:devices/${device}/config/tailf-ned-cisco-ios:interface
+#${baseurl_get_service}    https://{{ipaddr}}:443/restconf/data/tailf-ncs:services/hname-banner-rfs:hname-banner-rfs={{ser-device}}/hostname
+
+*** Test Cases ***
+login-nso
+    create session    myssion    ${baseurl_login}    auth=${login_auth}
+    ${response}=    get request    myssion    /
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_device_all
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_device_group
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /device-group
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_device
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /${device}
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_device_banner
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /${device}/config/tailf-ned-cisco-ios:banner
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_device_hostname
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /${device}/config/tailf-ned-cisco-ios:hostname
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_device_interface
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /${device}/config/tailf-ned-cisco-ios:interface
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+create_service
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl_service}    headers=${headers}    auth=${login_auth}
+    ${json}    Get Binary File    ${service_create_path}service-create.json
+    ${response}=    post request    myssion    /    data=${json}
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    201
+
+get_service_device_hostname
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl_service}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /hname-banner-rfs:hname-banner-rfs=${ser-device}/hostname
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+get_service_device_banner
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl_service}    headers=${headers}    auth=${login_auth}
+    ${response}=    get request    myssion    /hname-banner-rfs:hname-banner-rfs=${ser-device}/login-banner
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    200
+
+del_service
+    sleep    60s
+    ${headers}=    Create Dictionary    Content-Type    application/yang-data+json
+    create session    myssion    ${baseurl_service}    headers=${headers}    auth=${login_auth}
+    ${response}=    delete request    myssion    /hname-banner-rfs:hname-banner-rfs=${ser-device}/
+    log to console    ${response.content}
+    should be equal as strings    ${response.status_code}    204
+
+*** Keywords ***
+login
+    ${auth}=    create list    ${username}    ${password}
