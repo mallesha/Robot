@@ -1,0 +1,22 @@
+import  json
+
+device = "T02-ntsm-ci-ios38"
+hostname = "test123-hostname"
+banner = "test123-banner"
+x = {
+  "hname-banner-rfs:hname-banner-rfs": [
+    {
+      "device": device,
+      "hostname": hostname,
+      "login-banner": banner
+    }
+  ]
+}
+
+#print(json.dumps(x))
+#print(x['hname-banner-rfs:hname-banner-rfs'][0]['device'])
+
+x['hname-banner-rfs:hname-banner-rfs'][0]['device'] = device
+
+#print(x['hname-banner-rfs:hname-banner-rfs'][0]['device'])
+print json.dumps(x)
