@@ -1,0 +1,26 @@
+import json
+
+device = "T02-ntsm-ci-ios38"
+hostname = "test123-updated-hostname"
+banner = "test123-updated-banner"
+x={
+  "tailf-ncs:services": {
+    "global-settings": {
+      "collect-forward-diff": "true"
+    },
+
+    "hname-banner-rfs:hname-banner-rfs": [
+      {
+        "device": device,
+        "hostname": hostname,
+        "login-banner": banner
+      }
+    ]
+  }
+}
+
+x["tailf-ncs:services"]["hname-banner-rfs:hname-banner-rfs"][0]["hostname"] = hostname
+
+
+
+print json.dumps(x)
